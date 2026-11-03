@@ -1,133 +1,127 @@
-import { Editor, MarkdownView, Notice, Plugin, normalizePath } from "obsidian";
-import { escapeInvalidFileNameChars, findFrontmatterEndIndex, trimForFileName } from "./utils";
-import NoteSplitterSettingsTab from "./obsidian/note-splitter-settings-tab";
-
-interface NoteSplitterSettings {
-	saveFolderPath: string;
-	useContentAsTitle: boolean;
-	delimiter: string;
-	deleteOriginalNote: boolean;
-}
-
-const DEFAULT_SETTINGS: NoteSplitterSettings = {
-	saveFolderPath: "note-splitter",
-	useContentAsTitle: false,
-	delimiter: "\\n",
-	deleteOriginalNote: false,
-};
+import { normalizePath, Notice, Plugin } from 'obsidian'
+import type { NoteSplitterSettings } from './settings/settings'
+import { DEFAULT_SETTINGS, NoteSplitterSettingsTab } from './settings/settings'
+import {
+	escapeInvalidFileNameChars,
+	findFrontmatterEndIndex,
+	getErrorMessage,
+	trimForFileName,
+} from './utilities'
 
 export default class NoteSplitterPlugin extends Plugin {
-	settings: NoteSplitterSettings;
+	override settings: NoteSplitterSettings = { ...DEFAULT_SETTINGS }
 
-	async onload() {
-		await this.loadSettings();
+	override async onload() {
+		await this.loadSettings()
 
-		this.addSettingTab(new NoteSplitterSettingsTab(this.app, this));
+		this.addSettingTab(new NoteSplitterSettingsTab(this.app, this))
 
 		this.addCommand({
-			id: "split-by-delimiter",
-			name: "Split by delimiter",
-			editorCallback: async (_editor: Editor, view: MarkdownView) => {
-				const file = view.file;
-				if (file === null) return;
-
-				//Obsidian will store `\n`` as `\\n` in the settings
-				const delimiter = this.settings.delimiter.replace(/\\n/g, "\n");
-
-				if (delimiter === "") {
-					new Notice("No delimiter set. Please set a delimiter in the settings.");
-					return;
+			editorCallback: async (_editor, view) => {
+				const { file } = view
+				if (file === null) {
+					return
 				}
 
-				const fileData = await this.app.vault.cachedRead(file);
-				const frontmatterEndIndex = findFrontmatterEndIndex(fileData);
+				// Interpret the escaped newline stored in the settings.
+				const delimiter = this.settings.delimiter.replace(/\\n/gu, '\n')
 
-				let dataWithoutFrontmatter = fileData;
+				if (delimiter === '') {
+					new Notice('No delimiter set. Please set a delimiter in the settings.')
+					return
+				}
+
+				const fileData = await this.app.vault.cachedRead(file)
+				const frontmatterEndIndex = findFrontmatterEndIndex(fileData)
+
+				let dataWithoutFrontmatter = fileData
 				//Ignore frontmatter
 				if (frontmatterEndIndex !== -1) {
-					dataWithoutFrontmatter = dataWithoutFrontmatter.slice(frontmatterEndIndex + 1);
+					dataWithoutFrontmatter = dataWithoutFrontmatter.slice(frontmatterEndIndex + 1)
 				}
-				if (dataWithoutFrontmatter === "") {
-					new Notice("No content to split.");
-					return;
+
+				if (dataWithoutFrontmatter === '') {
+					new Notice('No content to split.')
+					return
 				}
 
 				const splitLines = dataWithoutFrontmatter
 					.split(delimiter)
 					.map((line) => line.trim())
-					.filter((line) => line !== "");
+					.filter((line) => line !== '')
 
 				if (splitLines.length === 0) {
-					new Notice("No content to split.");
-					return;
+					new Notice('No content to split.')
+					return
 				}
 
 				if (splitLines.length === 1) {
-					new Notice("Only one line found. Nothing to split.");
-					return;
+					new Notice('Only one line found. Nothing to split.')
+					return
 				}
 
 				const folderPath =
-					this.settings.saveFolderPath ||
-					file.parent?.path ||
-					this.settings.saveFolderPath;
+					this.settings.saveFolderPath === ''
+						? (file.parent?.path ?? '')
+						: this.settings.saveFolderPath
 
 				try {
-					await this.app.vault.createFolder(folderPath);
-				} catch (err) {
+					await this.app.vault.createFolder(folderPath)
+				} catch {
 					//Folder already exists
 				}
 
-				let filesCreated = 0;
+				let filesCreated = 0
 				for (const [i, line] of splitLines.entries()) {
-					let fileName = line;
+					let fileName = line
 					if (this.settings.useContentAsTitle) {
-						fileName = escapeInvalidFileNameChars(fileName);
-						fileName = trimForFileName(fileName, ".md");
+						fileName = escapeInvalidFileNameChars(fileName)
+						fileName = trimForFileName(fileName, '.md')
 					} else {
-						fileName = `split-note-${Date.now() + i}`;
+						fileName = `split-note-${Date.now() + i}`
 					}
 
-					const filePath = normalizePath(`${folderPath}/${fileName}.md`);
+					const filePath = normalizePath(`${folderPath}/${fileName}.md`)
 
 					try {
-						await this.app.vault.create(filePath, line);
-						filesCreated++;
-					} catch (err) {
-						if (err.message.includes("already exists")) {
-							const newFilePath = `${folderPath}/Split conflict ${crypto.randomUUID()}.md`;
+						await this.app.vault.create(filePath, line)
+						filesCreated++
+					} catch (error) {
+						if (getErrorMessage(error).includes('already exists')) {
+							const newFilePath = `${folderPath}/Split conflict ${crypto.randomUUID()}.md`
 							try {
-								await this.app.vault.create(newFilePath, line);
-								filesCreated++;
-							} catch (err) {
-								console.error(err);
-								new Notice(`Error creating file: ${err.message}`);
+								await this.app.vault.create(newFilePath, line)
+								filesCreated++
+							} catch (conflictError) {
+								console.error(conflictError)
+								new Notice(`Error creating file: ${getErrorMessage(conflictError)}`)
 							}
-							continue;
+
+							continue
 						}
-						new Notice(`Error creating file: ${err.message}`);
-						console.log(err);
+
+						new Notice(`Error creating file: ${getErrorMessage(error)}`)
+						console.log(error)
 					}
 				}
 
 				if (filesCreated === splitLines.length && this.settings.deleteOriginalNote) {
-					await this.app.vault.delete(file);
+					await this.app.vault.delete(file)
 				}
 
-				new Notice(
-					"Split into " + filesCreated + " note" + (filesCreated > 1 ? "s" : "") + ".",
-				);
+				new Notice('Split into ' + filesCreated + ' note' + (filesCreated > 1 ? 's' : '') + '.')
 			},
-		});
+			id: 'split-by-delimiter',
+			name: 'Split by delimiter',
+		})
 	}
 
-	onunload() {}
-
 	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		const savedSettings = (await this.loadData()) as Partial<NoteSplitterSettings>
+		this.settings = { ...DEFAULT_SETTINGS, ...savedSettings }
 	}
 
 	async saveSettings() {
-		await this.saveData(this.settings);
+		await this.saveData(this.settings)
 	}
 }

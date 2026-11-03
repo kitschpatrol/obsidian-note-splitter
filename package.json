@@ -1,28 +1,67 @@
 {
 	"name": "obsidian-note-splitter",
 	"version": "0.6.0",
-	"description": "Split notes based on a delimiter",
-	"main": "main.js",
-	"scripts": {
-		"dev": "node esbuild.config.mjs",
-		"build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
-		"format": "prettier --write .",
-		"obsidian:link": "bun run obsidian:unlink && ln -s $(pwd)/dist ~/Notes/Vault/.obsidian/plugins/note-splitter",
-		"obsidian:unlink": "rm -f ~/Notes/Vault/.obsidian/plugins/note-splitter",
-		"version": "node version-bump.mjs && git add manifest.json versions.json"
+	"private": true,
+	"description": "Obsidian plugin to split one note into many based on a delimiter.",
+	"keywords": [
+		"obsidian",
+		"obsidian-md",
+		"obsidian-plugin",
+		"markdown",
+		"notes"
+	],
+	"homepage": "https://github.com/kitschpatrol/obsidian-note-splitter",
+	"bugs": "https://github.com/kitschpatrol/obsidian-note-splitter/issues",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/kitschpatrol/obsidian-note-splitter.git"
 	},
-	"keywords": [],
-	"author": "DecafDev",
 	"license": "MIT",
+	"author": {
+		"name": "Eric Mika",
+		"email": "eric@ericmika.com",
+		"url": "https://ericmika.com"
+	},
+	"contributors": [
+		{
+			"name": "DecafDev",
+			"url": "https://github.com/decaf-dev"
+		}
+	],
+	"type": "module",
+	"main": "./dist/main.js",
+	"scripts": {
+		"build": "tsc --noEmit --skipLibCheck && pnpm build:bundle",
+		"build:bundle": "shx rm -rf ./dist && tsx ./scripts/build.ts production",
+		"clean-deep": "shx rm -f pnpm-lock.yaml && git clean -fdX",
+		"dev": "shx rm -rf ./dist && tsx ./scripts/build.ts",
+		"fix": "ksc fix",
+		"lint": "ksc lint",
+		"manifest": "tsx ./scripts/generate-manifest.ts",
+		"note-splitter:deploy-local": "shx mkdir -p ~/Notes/Vault/.obsidian/plugins/note-splitter && shx cp -r ./dist/* ~/Notes/Vault/.obsidian/plugins/note-splitter",
+		"release": "bumpp package.json manifest.json --execute 'pnpm manifest' --commit 'Release: %s' --tag '%s'"
+	},
 	"devDependencies": {
-		"@types/node": "^16.11.6",
-		"@typescript-eslint/eslint-plugin": "5.29.0",
-		"@typescript-eslint/parser": "5.29.0",
-		"builtin-modules": "3.3.0",
-		"esbuild": "0.17.3",
-		"obsidian": "latest",
-		"prettier": "^3.3.2",
-		"tslib": "2.4.0",
-		"typescript": "4.7.4"
+		"@kitschpatrol/shared-config": "^8.14.1",
+		"@types/node": "~24.13.6",
+		"bumpp": "^12.3.0",
+		"chokidar": "^6.0.0",
+		"esbuild": "^0.28.2",
+		"obsidian": "1.13.1",
+		"shx": "^0.4.0",
+		"tsx": "^4.23.15",
+		"typescript": "~6.0.3"
+	},
+	"packageManager": "pnpm@12.16.1",
+	"engines": {
+		"node": "^24.16.0 || >=26.3.0"
+	},
+	"obsidian": {
+		"author": "Kitschpatrol",
+		"description": "Split a note into individual notes based on a delimiter.",
+		"id": "note-splitter",
+		"isDesktopOnly": true,
+		"minAppVersion": "0.15.0",
+		"name": "Note Splitter"
 	}
 }
