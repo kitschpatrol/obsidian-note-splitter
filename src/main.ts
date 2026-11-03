@@ -1,4 +1,4 @@
-import { normalizePath, Notice, Plugin } from 'obsidian'
+import { normalizePath, Notice, Platform, Plugin } from 'obsidian'
 import type { NoteSplitterSettings } from './settings/settings'
 import { DEFAULT_SETTINGS, NoteSplitterSettingsTab } from './settings/settings'
 import {
@@ -49,6 +49,8 @@ export default class NoteSplitterPlugin extends Plugin {
 					.split(delimiter)
 					.map((line) => line.trim())
 					.filter((line) => line !== '')
+					// Re-attach the delimiter after filtering so empty sections stay empty.
+					.map((line) => (this.settings.removeDelimiter ? line : line + delimiter))
 
 				if (splitLines.length === 0) {
 					new Notice('No content to split.')
@@ -56,7 +58,7 @@ export default class NoteSplitterPlugin extends Plugin {
 				}
 
 				if (splitLines.length === 1) {
-					new Notice('Only one line found. Nothing to split.')
+					new Notice('Only one section of content found. Nothing to split.')
 					return
 				}
 
@@ -73,9 +75,13 @@ export default class NoteSplitterPlugin extends Plugin {
 
 				let filesCreated = 0
 				for (const [i, line] of splitLines.entries()) {
-					let fileName = line
+					const content = line + this.settings.appendToSplitContent
+
+					let fileName: string
 					if (this.settings.useContentAsTitle) {
-						fileName = escapeInvalidFileNameChars(fileName)
+						// Use only the first line so multi-line sections produce valid filenames.
+						fileName = line.split('\n', 1)[0] ?? ''
+						fileName = escapeInvalidFileNameChars(fileName, Platform.isWin)
 						fileName = trimForFileName(fileName, '.md')
 					} else {
 						fileName = `split-note-${Date.now() + i}`
@@ -84,13 +90,13 @@ export default class NoteSplitterPlugin extends Plugin {
 					const filePath = normalizePath(`${folderPath}/${fileName}.md`)
 
 					try {
-						await this.app.vault.create(filePath, line)
+						await this.app.vault.create(filePath, content)
 						filesCreated++
 					} catch (error) {
 						if (getErrorMessage(error).includes('already exists')) {
 							const newFilePath = `${folderPath}/Split conflict ${crypto.randomUUID()}.md`
 							try {
-								await this.app.vault.create(newFilePath, line)
+								await this.app.vault.create(newFilePath, content)
 								filesCreated++
 							} catch (conflictError) {
 								console.error(conflictError)

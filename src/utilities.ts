@@ -9,13 +9,22 @@ export const findFrontmatterEndIndex = (value: string): number => {
  * Escapes characters invalid for a file name.
  *
  * @param value - Text to use as a file name.
+ * @param isWindows - Also remove characters that are only invalid on Windows.
  */
-export const escapeInvalidFileNameChars = (value: string): string =>
+export const escapeInvalidFileNameChars = (value: string, isWindows = false): string => {
 	// Replace colons with hyphens, slashes with spaces, and remove reserved characters.
-	value
+	let escaped = value
 		.replace(/:/gu, '-')
 		.replace(/[\\/]/gu, ' ')
 		.replace(/[\^[\]#|]/gu, '')
+
+	if (isWindows) {
+		// Remove characters Windows does not allow in file names.
+		escaped = escaped.replace(/[?<>"*`]/gu, '')
+	}
+
+	return escaped.trim()
+}
 
 /**
  * Trims the string to the maximum length allowed for a file name

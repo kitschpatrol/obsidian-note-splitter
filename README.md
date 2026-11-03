@@ -55,7 +55,7 @@ Changes from the original version this fork was based on:
 - **Accurate completion notices**\
   Report the number of notes actually created, including when some files could not be saved.
 - **Modern settings**\
-  Use Obsidian's declarative settings API for all four settings. This fork requires Obsidian **1.15.0 or newer**.
+  Use Obsidian's declarative settings API for all settings. This fork requires Obsidian **1.15.0 or newer**.
 - **GitHub distribution**\
   Publish plugin files and an installation ZIP through GitHub releases, with no community registry submission.
 - **Development tooling:**\
@@ -115,11 +115,25 @@ Setting this field to an empty string will save split notes to the same folder a
 
 The delimiter to split by can be configured in the plugin settings. The default delimiter is a new line `\n`.
 
+### Remove delimiter
+
+If enabled, the delimiter is not included in the content of the split notes. If disabled, the delimiter is appended to the end of each split note.
+
+For example, with the delimiter set to a period `.`, the note `This is sentence 1. This is sentence 2.` produces the notes `This is sentence 1` and `This is sentence 2`. With this setting disabled, it produces `This is sentence 1.` and `This is sentence 2.` instead.
+
+Enabled by default.
+
 ### Use content as title
 
-If enabled, use each split section's content as the name for the new note, cleaning up filename characters and shortening long names. If a note with that name already exists, a unique conflict filename is used. If disabled, a timestamp is used.
+If enabled, use the first line of each split section as the name for the new note, cleaning up filename characters and shortening long names. If a note with that name already exists, a unique conflict filename is used. If disabled, a timestamp is used.
+
+Colons are replaced with hyphens, slashes are replaced with spaces, and `^`, `[`, `]`, `#`, and `|` are removed. On Windows, `?`, `<`, `>`, `"`, `*`, and `` ` `` are also removed.
 
 Disabled by default.
+
+### Append to split content
+
+Text to append to the end of each split note. Empty by default.
 
 ### Delete original
 
