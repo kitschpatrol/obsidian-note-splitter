@@ -43,7 +43,7 @@ This is a fork of [Obsidian Note Splitter](https://github.com/decaf-dev/obsidian
 
 1. **Prerequisites**
 
-   The [Obsidian desktop application](https://obsidian.md/download).
+   The [Obsidian desktop application](https://obsidian.md/download), version **1.15.0 or newer**.
 
 2. **Plugin installation**
 
