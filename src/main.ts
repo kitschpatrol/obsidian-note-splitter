@@ -120,8 +120,4 @@ export default class NoteSplitterPlugin extends Plugin {
 		const savedSettings = (await this.loadData()) as Partial<NoteSplitterSettings>
 		this.settings = { ...DEFAULT_SETTINGS, ...savedSettings }
 	}
-
-	async saveSettings() {
-		await this.saveData(this.settings)
-	}
 }

@@ -1,5 +1,5 @@
-import type { App } from 'obsidian'
-import { PluginSettingTab, Setting } from 'obsidian'
+import type { App, SettingDefinitionItem } from 'obsidian'
+import { PluginSettingTab } from 'obsidian'
 import type NoteSplitterPlugin from '../main'
 
 export type NoteSplitterSettings = {
@@ -24,53 +24,44 @@ export class NoteSplitterSettingsTab extends PluginSettingTab {
 		this.plugin = plugin
 	}
 
-	override display() {
-		const { containerEl } = this
-
-		containerEl.empty()
-
-		new Setting(containerEl)
-			.setName('Folder path')
-			.setDesc(
-				'The path to the folder that split notes will be placed in. If left empty, the folder of the original note will be used.',
-			)
-			.addText((text) =>
-				text.setValue(this.plugin.settings.saveFolderPath).onChange(async (value) => {
-					this.plugin.settings.saveFolderPath = value
-					await this.plugin.saveSettings()
-				}),
-			)
-
-		new Setting(containerEl)
-			.setName('Delimiter')
-			.setDesc('The delimiter to split by.')
-			.addText((text) =>
-				text.setValue(this.plugin.settings.delimiter).onChange(async (value) => {
-					this.plugin.settings.delimiter = value
-					await this.plugin.saveSettings()
-				}),
-			)
-
-		new Setting(containerEl)
-			.setName('Use content as title')
-			.setDesc(
-				'If true, the first sentence will be used as the title of the note, otherwise a timestamp will be used e.g. note-splitter-1702591910.',
-			)
-			.addToggle((text) =>
-				text.setValue(this.plugin.settings.useContentAsTitle).onChange(async (value) => {
-					this.plugin.settings.useContentAsTitle = value
-					await this.plugin.saveSettings()
-				}),
-			)
-
-		new Setting(containerEl)
-			.setName('Delete original')
-			.setDesc('Delete the original note after a successful split.')
-			.addToggle((text) =>
-				text.setValue(this.plugin.settings.deleteOriginalNote).onChange(async (value) => {
-					this.plugin.settings.deleteOriginalNote = value
-					await this.plugin.saveSettings()
-				}),
-			)
+	override getSettingDefinitions(): Array<SettingDefinitionItem<keyof NoteSplitterSettings>> {
+		return [
+			{
+				control: {
+					defaultValue: DEFAULT_SETTINGS.saveFolderPath,
+					key: 'saveFolderPath',
+					type: 'text',
+				},
+				desc: 'The path to the folder that split notes will be placed in. If left empty, the folder of the original note will be used.',
+				name: 'Folder path',
+			},
+			{
+				control: {
+					defaultValue: DEFAULT_SETTINGS.delimiter,
+					key: 'delimiter',
+					type: 'text',
+				},
+				desc: 'The delimiter to split by.',
+				name: 'Delimiter',
+			},
+			{
+				control: {
+					defaultValue: DEFAULT_SETTINGS.useContentAsTitle,
+					key: 'useContentAsTitle',
+					type: 'toggle',
+				},
+				desc: 'If true, the first sentence will be used as the title of the note, otherwise a timestamp will be used e.g. note-splitter-1702591910.',
+				name: 'Use content as title',
+			},
+			{
+				control: {
+					defaultValue: DEFAULT_SETTINGS.deleteOriginalNote,
+					key: 'deleteOriginalNote',
+					type: 'toggle',
+				},
+				desc: 'Delete the original note after a successful split.',
+				name: 'Delete original',
+			},
+		]
 	}
 }
