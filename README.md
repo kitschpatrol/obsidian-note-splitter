@@ -147,10 +147,8 @@ This repository uses [@kitschpatrol/shared-config](https://github.com/kitschpatr
 
 <!-- /contributing -->
 
-<!-- license -->
-
 ## License
 
-[MIT](LICENSE) © [Eric Mika](https://ericmika.com)
+[MIT](LICENSE) © DecafDev (Original plugin)
 
-<!-- /license -->
+[MIT](LICENSE) © [Eric Mika](https://ericmika.com) (Fork changes)
