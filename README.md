@@ -23,6 +23,7 @@
 ## Table of contents
 
 - [Overview](#overview)
+- [Fork changes](#fork-changes)
 - [Quick start](#quick-start)
 - [Usage](#usage)
 - [Settings](#settings)
@@ -37,7 +38,28 @@
 
 Split the active note in Obsidian into separate Markdown files using a delimiter. The default delimiter is a new line, so each nonempty line becomes its own note.
 
-This is a fork of [Obsidian Note Splitter](https://github.com/decaf-dev/obsidian-note-splitter) by [DecafDev](https://github.com/decaf-dev) with some minor changes. This fork is distributed through GitHub releases and will not be published to Obsidian's community plugin registry.
+This is a fork of [Obsidian Note Splitter](https://github.com/decaf-dev/obsidian-note-splitter) by [DecafDev](https://github.com/decaf-dev).
+
+This fork is distributed through GitHub releases and will not be published to Obsidian's community plugin registry.
+
+## Fork changes
+
+Changes from the original version this fork was based on:
+
+- **Save beside the source note**\
+  Leave [Folder path](#folder-path) empty to save split notes in the same folder as the original note.
+- **Optional source deletion**\
+  [Delete original](#delete-original) removes the source note only after every split note has been created successfully. Disabled by default.
+- **Skip whitespace-only sections**\
+  Trim sections before checking whether they are empty, preventing blank notes from being created.
+- **Accurate completion notices**\
+  Report the number of notes actually created, including when some files could not be saved.
+- **Modern settings**\
+  Use Obsidian's declarative settings API for all four settings. This fork requires Obsidian **1.15.0 or newer**.
+- **GitHub distribution**\
+  Publish plugin files and an installation ZIP through GitHub releases, with no community registry submission.
+- **Development tooling:**\
+  Use pnpm, shared lint and formatting configuration, TypeScript build scripts, generated manifests, a demo vault, and mdat-generated README sections. CI checks builds and linting on Linux, macOS, and Windows.
 
 ## Quick start
 
