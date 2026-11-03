@@ -3,15 +3,19 @@ import { PluginSettingTab } from 'obsidian'
 import type NoteSplitterPlugin from '../main'
 
 export type NoteSplitterSettings = {
+	appendToSplitContent: string
 	deleteOriginalNote: boolean
 	delimiter: string
+	removeDelimiter: boolean
 	saveFolderPath: string
 	useContentAsTitle: boolean
 }
 
 export const DEFAULT_SETTINGS: NoteSplitterSettings = {
+	appendToSplitContent: '',
 	deleteOriginalNote: false,
 	delimiter: '\\n',
+	removeDelimiter: true,
 	saveFolderPath: 'note-splitter',
 	useContentAsTitle: false,
 }
@@ -46,12 +50,30 @@ export class NoteSplitterSettingsTab extends PluginSettingTab {
 			},
 			{
 				control: {
+					defaultValue: DEFAULT_SETTINGS.removeDelimiter,
+					key: 'removeDelimiter',
+					type: 'toggle',
+				},
+				desc: 'If enabled, the delimiter will not be included in the content of split notes.',
+				name: 'Remove delimiter',
+			},
+			{
+				control: {
 					defaultValue: DEFAULT_SETTINGS.useContentAsTitle,
 					key: 'useContentAsTitle',
 					type: 'toggle',
 				},
-				desc: 'If true, the first sentence will be used as the title of the note, otherwise a timestamp will be used e.g. note-splitter-1702591910.',
+				desc: 'If enabled, the first line of each split note will be used as its title, otherwise a timestamp will be used e.g. split-note-1702591910.',
 				name: 'Use content as title',
+			},
+			{
+				control: {
+					defaultValue: DEFAULT_SETTINGS.appendToSplitContent,
+					key: 'appendToSplitContent',
+					type: 'text',
+				},
+				desc: 'Text to append to the content of each split note.',
+				name: 'Append to split content',
 			},
 			{
 				control: {
