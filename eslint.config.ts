@@ -2,7 +2,7 @@ import { eslintConfig } from '@kitschpatrol/eslint-config'
 
 export default eslintConfig(
 	{
-		ignores: ['examples/Note Splitter Demo Vault/**'],
+		ignores: ['examples/Note Splitter Demo Vault/**', '**/changelog.md'],
 		ts: {
 			overrides: {
 				'jsdoc/require-jsdoc': 'off',

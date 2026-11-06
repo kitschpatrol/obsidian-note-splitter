@@ -39,9 +39,10 @@
 		"lint": "ksc lint",
 		"manifest": "tsx ./scripts/generate-manifest.ts",
 		"note-splitter:deploy-local": "shx mkdir -p ~/Notes/Vault/.obsidian/plugins/note-splitter && shx cp -r ./dist/* ~/Notes/Vault/.obsidian/plugins/note-splitter",
-		"release": "bumpp package.json manifest.json --execute 'pnpm manifest' --commit 'Release: %s' --tag '%s'"
+		"release": "pnpm manifest && bumpp package.json manifest.json --commit 'Release: %s' --tag '%s' --all --execute 'chagent'"
 	},
 	"devDependencies": {
+		"@kitschpatrol/chagent": "0.4.0",
 		"@kitschpatrol/shared-config": "^8.14.1",
 		"@types/node": "~24.13.6",
 		"bumpp": "^12.3.0",
